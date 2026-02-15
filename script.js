@@ -1,23 +1,199 @@
-// ---------- Demo texts ----------
-const demoBio = "Нейрон — это клетка, которая передаёт сигналы в нервной системе. Сигналы проходят через синапсы с помощью химических веществ. Это помогает мозгу управлять движениями и чувствами.";
-const demoChem = "Скорость химической реакции зависит от концентрации реагентов, температуры и наличия катализатора. При повышении температуры частицы движутся быстрее и чаще сталкиваются, поэтому реакция ускоряется.";
-const demoPhys = "Давление — это сила, действующая на единицу площади. Если площадь опоры меньше, давление больше. Поэтому острый нож режет лучше, чем тупой.";
+/* ===========================
+   ELI12 — upgraded MVP
+   - simplify level (1-3)
+   - RU/EN UI
+   - theme toggle
+   - history (last 6 inputs)
+   - copy / download
+   - key terms chips + glossary
+   - quiz w/ suggested answers
+   =========================== */
 
-// ---------- Helpers ----------
-const SUFFIXES = ["ция","изм","ность","ирование","логия","метрия","генез","функция","процесс"];
-
-const SUBJECT_HINTS = {
-  Biology: ["клет","нейрон","ген","белок","орган","мозг","кров","иммун"],
-  Chemistry: ["реакц","моль","катализ","кисл","основан","раствор","окис","ион"],
-  Physics: ["сила","давлен","скорост","энерг","поле","напряж","масса","ускор"]
+// --------- Demo texts ----------
+const DEMO = {
+  bio: "Нейрон — это клетка, которая передаёт сигналы в нервной системе. Сигналы проходят через синапсы с помощью химических веществ. Это помогает мозгу управлять движениями, эмоциями и формировать память.",
+  chem: "Скорость химической реакции зависит от концентрации реагентов и температуры. При повышении температуры частицы движутся быстрее и чаще сталкиваются, поэтому реакция ускоряется. Катализатор снижает энергию активации и ускоряет процесс, но сам почти не расходуется.",
+  phys: "Давление — это сила, действующая на единицу площади. Если площадь опоры меньше, давление больше, поэтому острый нож режет лучше. Увеличение силы также увеличивает давление и влияет на результат."
 };
+
+// --------- UI translations ----------
+const T = {
+  en: {
+    subtitle: "Paste textbook text → get simple explanation + examples + quiz",
+    input: "Input",
+    output: "Output",
+    offline: "Offline MVP",
+    paste: "Paste your text",
+    level: "Simplify level",
+    levelHint: "1 = light, 2 = normal, 3 = very simple",
+    len: "Output length",
+    lenHint: "Word count of your input",
+    history: "History",
+    note: "Works fully offline. No external APIs. Heuristic NLP + UX demo for hackathon.",
+    emptyTitle: "No output yet",
+    emptyText: "Choose a demo or paste text, then press Explain.",
+    simple: "1) Simple explanation",
+    terms: "2) Key terms",
+    gloss: "Glossary",
+    examples: "3) Examples",
+    quiz: "4) Mini-quiz",
+    showSuggested: "Show suggested answers",
+    subject: "Subject",
+    quality: "Quality",
+    copied: "Copied ✅"
+  },
+  ru: {
+    subtitle: "Вставь текст → получи простое объяснение + примеры + квиз",
+    input: "Ввод",
+    output: "Результат",
+    offline: "Оффлайн MVP",
+    paste: "Вставь свой текст",
+    level: "Уровень упрощения",
+    levelHint: "1 = легко, 2 = нормально, 3 = максимально просто",
+    len: "Длина ответа",
+    lenHint: "Количество слов во входном тексте",
+    history: "История",
+    note: "Работает полностью оффлайн. Без внешних API. Эвристики NLP + UX демо для хакатона.",
+    emptyTitle: "Пока пусто",
+    emptyText: "Выбери демо или вставь текст, затем нажми Explain.",
+    simple: "1) Простое объяснение",
+    terms: "2) Ключевые термины",
+    gloss: "Глоссарий",
+    examples: "3) Примеры",
+    quiz: "4) Мини-квиз",
+    showSuggested: "Показывать пример ответов",
+    subject: "Тема",
+    quality: "Качество",
+    copied: "Скопировано ✅"
+  }
+};
+
+// --------- DOM ----------
+const $ = (id) => document.getElementById(id);
+
+const elText = $("text");
+const elExplain = $("explainBtn");
+const elClear = $("clearBtn");
+const elCopy = $("copyBtn");
+const elDownload = $("downloadBtn");
+
+const elLevel = $("level");
+const elLevelBadge = $("levelBadge");
+const elMaxWords = $("maxWords");
+const elCountBadge = $("countBadge");
+
+const elEmpty = $("emptyState");
+const elOut = $("output");
+
+const elExplanation = $("explanation");
+const elGlossary = $("glossary");
+const elTerms = $("terms");
+const elExamples = $("examples");
+const elQuiz = $("quiz");
+
+const elShowSuggested = $("showSuggested");
+const elToast = $("toast");
+
+const elSubjectPill = $("subjectPill");
+const elQualityPill = $("qualityPill");
+
+const elHistory = $("history");
+
+const elLangBtn = $("langBtn");
+const elThemeBtn = $("themeBtn");
+const elLiveLink = $("liveLink");
+
+// UI text nodes
+const ui = {
+  subtitle: $("uiSubtitle"),
+  input: $("uiInputTitle"),
+  output: $("uiOutputTitle"),
+  offline: $("uiOfflinePill"),
+  paste: $("uiPasteLabel"),
+  level: $("uiLevelLabel"),
+  levelHint: $("uiLevelHint"),
+  len: $("uiLenLabel"),
+  lenHint: $("uiLenHint"),
+  history: $("uiHistoryTitle"),
+  note: $("uiNote"),
+  emptyTitle: $("uiEmptyTitle"),
+  emptyText: $("uiEmptyText"),
+  simple: $("uiSimpleTitle"),
+  terms: $("uiTermsTitle"),
+  gloss: $("uiGlossTitle"),
+  examples: $("uiExamplesTitle"),
+  quiz: $("uiQuizTitle"),
+  showSuggested: $("uiShowSuggested")
+};
+
+// --------- State ----------
+let lang = "en";
+let dark = true;
+let history = []; // {t, ts}
+
+// --------- Utils ----------
+function toast(msg){
+  elToast.textContent = msg;
+  elToast.classList.add("show");
+  setTimeout(()=> elToast.classList.remove("show"), 900);
+}
+
+function wordCount(s){
+  const m = (s.trim().match(/[A-Za-zА-Яа-яёЁ0-9]+/g) || []);
+  return m.length;
+}
+
+function setLang(next){
+  lang = next;
+  elLangBtn.textContent = (lang === "en") ? "RU" : "EN";
+  const t = T[lang];
+  ui.subtitle.textContent = t.subtitle;
+  ui.input.textContent = t.input;
+  ui.output.textContent = t.output;
+  ui.offline.textContent = t.offline;
+  ui.paste.textContent = t.paste;
+  ui.level.textContent = t.level;
+  ui.levelHint.textContent = t.levelHint;
+  ui.len.textContent = t.len;
+  ui.lenHint.textContent = t.lenHint;
+  ui.history.textContent = t.history;
+  ui.note.textContent = t.note;
+  ui.emptyTitle.textContent = t.emptyTitle;
+  ui.emptyText.textContent = t.emptyText;
+  ui.simple.textContent = t.simple;
+  ui.terms.textContent = t.terms;
+  ui.gloss.textContent = t.gloss;
+  ui.examples.textContent = t.examples;
+  ui.quiz.textContent = t.quiz;
+  ui.showSuggested.textContent = t.showSuggested;
+
+  // pills
+  elSubjectPill.textContent = `${t.subject}: —`;
+  elQualityPill.textContent = `${t.quality}: —`;
+
+  // live link
+  elLiveLink.textContent = "Live";
+  elLiveLink.href = window.location.href;
+}
+
+function setTheme(isDark){
+  dark = isDark;
+  document.body.classList.toggle("light", !dark);
+  elThemeBtn.textContent = dark ? "🌙" : "☀️";
+}
 
 function splitSentences(text){
   const t = text.replace(/\s+/g," ").trim();
   if(!t) return [];
-  // split on .!? and keep it simple
-  return t.split(/(?<=[.!?])\s+/).map(s=>s.trim()).filter(Boolean);
+  // simple sentence split
+  return t.split(/(?<=[.!?…])\s+/).map(s=>s.trim()).filter(Boolean);
 }
+
+const SUBJECT_HINTS = {
+  Biology: ["клет","нейрон","ген","белок","орган","мозг","кров","иммун","synapse","neuron","gene","protein"],
+  Chemistry: ["реакц","моль","катализ","кисл","основан","раствор","окис","ион","reaction","mole","catal","acid","base"],
+  Physics: ["сила","давлен","скорост","энерг","поле","масса","ускор","pressure","force","energy","mass","accel"]
+};
 
 function detectSubject(text){
   const t = text.toLowerCase();
@@ -30,7 +206,10 @@ function detectSubject(text){
   return best.name;
 }
 
-function pickHardWords(text, k=8){
+// hard-word heuristics
+const SUFFIXES = ["ция","изм","ность","ирование","логия","метрия","генез","функция","процесс","ation","ism","ness","tion","logy","metry","genesis"];
+
+function pickHardWords(text, k=10){
   const words = (text.match(/[A-Za-zА-Яа-яёЁ\-]{4,}/g) || []);
   const cand = [];
   for(const w of words){
@@ -38,7 +217,7 @@ function pickHardWords(text, k=8){
     let score = 0;
     if(w.length >= 11) score += 2;
     if(SUFFIXES.some(s=>wl.endsWith(s))) score += 2;
-    if(wl.includes("ци") || wl.includes("изм") || wl.includes("лог")) score += 1;
+    if(/[A-Z]/.test(w)) score += 1;
     if(score > 0) cand.push({score, w});
   }
   cand.sort((a,b)=> b.score - a.score || b.w.length - a.w.length);
@@ -56,144 +235,382 @@ function pickHardWords(text, k=8){
 }
 
 function glossaryFor(words){
+  const isRU = (lang === "ru");
   return words.map(w=>{
     const wl = w.toLowerCase();
-    let d = "Простыми словами: ключевой термин из текста.";
-    if(wl.endsWith("ция")) d = "Слово про действие/явление. Проще: «то, что происходит».";
-    else if(wl.endsWith("изм")) d = "Название идеи/подхода. Проще: «способ думать или объяснять».";
-    else if(wl.endsWith("ность")) d = "Это «качество/свойство». Проще: «насколько что-то такое-то».";
-    else if(wl.includes("реак")) d = "Это когда вещества меняются и получается что-то новое.";
-    else if(wl.includes("энерг")) d = "Это «запас сил»: то, что позволяет делать работу.";
+    let d = isRU
+      ? "Простыми словами: важный термин из текста."
+      : "In simple words: an important term from the text.";
+
+    if(isRU){
+      if(wl.endsWith("ция")) d = "Слово про действие/явление. Проще: «то, что происходит».";
+      else if(wl.endsWith("изм")) d = "Название идеи/подхода. Проще: «способ думать или объяснять».";
+      else if(wl.endsWith("ность")) d = "Это «качество/свойство». Проще: «насколько что-то такое-то».";
+      else if(wl.includes("реак")) d = "Это когда вещества меняются и получается что-то новое.";
+      else if(wl.includes("энерг")) d = "Это «запас сил»: то, что позволяет делать работу.";
+      else if(wl.includes("давлен")) d = "Это насколько сильно «давит» сила на поверхность.";
+      else if(wl.includes("катализ")) d = "Это «ускоритель» реакции, который сам почти не тратится.";
+    } else {
+      if(wl.endsWith("ation") || wl.endsWith("tion")) d = "A word about an action/process. Simply: “what happens”.";
+      else if(wl.endsWith("ism")) d = "A named idea/approach. Simply: “a way to explain things”.";
+      else if(wl.endsWith("ness")) d = "A property/quality. Simply: “how much something is like that”.";
+      else if(wl.includes("reaction")) d = "When substances change and form something new.";
+      else if(wl.includes("energy")) d = "A “store of power” that lets things happen / work be done.";
+      else if(wl.includes("pressure")) d = "How strongly a force presses on a surface.";
+      else if(wl.includes("catal")) d = "A helper that speeds up a reaction without being used up much.";
+    }
+
     return {w, d};
   });
 }
 
 function buildExamples(subject){
-  if(subject === "Physics") return [
+  const isRU = (lang === "ru");
+  if(subject === "Physics") return isRU ? [
     "Лыжи меньше проваливаются в снег: площадь больше → давление меньше.",
-    "Толкаешь сильнее → ускорение больше: сила влияет на движение.",
-    "Энергия — как заряд батарейки: чем больше, тем больше можно сделать."
+    "Острый нож режет лучше: площадь контакта маленькая → давление большое.",
+    "Если толкать сильнее (больше силы), движение меняется быстрее."
+  ] : [
+    "Skis sink less: bigger area → lower pressure.",
+    "A sharp knife cuts better: smaller area → higher pressure.",
+    "More force usually changes motion faster."
   ];
-  if(subject === "Chemistry") return [
+
+  if(subject === "Chemistry") return isRU ? [
     "Сахар быстрее растворяется в горячей воде — температура ускоряет процесс.",
     "Катализатор — как помощник: ускоряет реакцию, но сам почти не тратится.",
     "Больше концентрация → чаще столкновения частиц → реакция быстрее."
+  ] : [
+    "Sugar dissolves faster in hot water — temperature speeds things up.",
+    "A catalyst is like a helper: faster reaction, not used up much.",
+    "Higher concentration → more collisions → faster reaction."
   ];
-  if(subject === "Biology") return [
+
+  if(subject === "Biology") return isRU ? [
     "Нейроны как провода: передают сигналы.",
     "Ген как инструкция: по ней делают белки.",
     "Иммунитет как охрана: узнаёт чужое и защищает."
+  ] : [
+    "Neurons are like wires: they carry signals.",
+    "A gene is like instructions to build proteins.",
+    "The immune system is like security: it protects you."
   ];
-  return [
+
+  return isRU ? [
     "Объясни это младшему брату одним предложением.",
     "Придумай пример из жизни (школа/спорт/еда/игры).",
     "Замени сложные слова простыми — смысл должен остаться."
+  ] : [
+    "Explain it to a younger friend in one sentence.",
+    "Give a real-life example (school/sports/food/games).",
+    "Replace hard words with simple ones without changing meaning."
   ];
 }
 
-function shorten(s, n){
-  const t = s.trim();
-  return t.length > n ? t.slice(0,n).trimEnd() + "…" : t;
-}
+function simplifyText(sentences, level, maxWords){
+  // Build a short explanation from first N sentences with replacements.
+  const isRU = (lang === "ru");
 
-function analyze(text){
-  const sents = splitSentences(text);
-  if(sents.length === 0) return null;
+  const replRU = [
+    [/следовательно|в результате/gi, "поэтому"],
+    [/однако/gi, "но"],
+    [/характеризуется/gi, "обычно имеет"],
+    [/определяется/gi, "это"],
+    [/является/gi, "это"],
+  ];
+  const replEN = [
+    [/therefore|thus|as a result/gi, "so"],
+    [/however/gi, "but"],
+    [/is characterized by/gi, "usually has"],
+    [/is defined as/gi, "is"],
+  ];
 
-  const subject = detectSubject(text);
-  const hard = pickHardWords(text, 8);
-  const glossary = glossaryFor(hard);
+  const repl = isRU ? replRU : replEN;
 
-  let main = sents[0].replace(/[,;:]\s*/g, ". ");
-  main = shorten(main, 160);
-
-  const bullets = sents.slice(0,5).map(s=>{
+  let take = level === 1 ? 3 : (level === 2 ? 4 : 5);
+  const picked = sentences.slice(0, take).map(s=>{
     let x = s;
-    x = x.replace(/\b(следовательно|в результате)\b/gi, "поэтому");
-    x = x.replace(/\bоднако\b/gi, "но");
-    x = x.replace(/\bхарактеризуется\b/gi, "обычно имеет");
-    x = x.replace(/\bопределяется\b/gi, "это");
-    return shorten(x, 140);
-  });
+    for(const [a,b] of repl) x = x.replace(a,b);
+    // extra simplification for level 3
+    if(level === 3){
+      x = x.replace(/[,;:]\s*/g, ". ");
+      x = x.replace(/\((.*?)\)/g, "");
+    }
+    return x.trim();
+  }).filter(Boolean);
 
-  const explanationHTML = `
-    <div class="kv"><div><b>Subject</b></div><div>${subject} <span class="badge">MVP</span></div></div>
-    <div class="kv"><div><b>Main idea</b></div><div>${main}</div></div>
-    <div style="margin-top:10px"><b>In simple steps:</b></div>
-    <ul class="list">${bullets.map(b=>`<li>${b}</li>`).join("")}</ul>
-  `;
-
-  const examples = buildExamples(subject);
-
-  const quiz = [
-    {q:"Объясни одним предложением, о чём текст.", hint:"Сравни с Main idea"},
-    {q:"Назови 1 сложный термин и объясни его простыми словами.", hint:"Можно взять из Glossary"},
-    {q:"Приведи 1 пример из жизни, который подходит к идее.", hint:"Можно взять из Examples"},
-    {q:"Что было самым непонятным?", hint:"Запиши слово/фразу"},
-    {q:"Какая главная мысль?", hint:"Один короткий вывод"}
-  ];
-
-  return { explanationHTML, glossary, examples, quiz };
+  // cap by word limit
+  const out = [];
+  let wc = 0;
+  for(const p of picked){
+    const w = wordCount(p);
+    if(wc + w > maxWords) break;
+    out.push(p);
+    wc += w;
+  }
+  return out.length ? out : picked.slice(0,1);
 }
 
-// ---------- UI wiring ----------
-const elText = document.getElementById("text");
-const out = document.getElementById("output");
-const empty = document.getElementById("emptyState");
+function qualityScore(input){
+  const wc = wordCount(input);
+  const sents = splitSentences(input).length;
+  let score = 0;
+  if(wc >= 25) score += 1;
+  if(wc >= 60) score += 1;
+  if(sents >= 2) score += 1;
+  if(sents >= 4) score += 1;
+  return score; // 0..4
+}
 
-document.getElementById("demoBio").onclick = ()=>{ elText.value = demoBio; };
-document.getElementById("demoChem").onclick = ()=>{ elText.value = demoChem; };
-document.getElementById("demoPhys").onclick = ()=>{ elText.value = demoPhys; };
+function qualityLabel(score){
+  const isRU = (lang === "ru");
+  if(score <= 1) return isRU ? {t:"low", c:"var(--warn)"} : {t:"low", c:"var(--warn)"};
+  if(score === 2) return isRU ? {t:"ok", c:"var(--good)"} : {t:"ok", c:"var(--good)"};
+  if(score === 3) return isRU ? {t:"good", c:"var(--good)"} : {t:"good", c:"var(--good)"};
+  return isRU ? {t:"great", c:"var(--good)"} : {t:"great", c:"var(--good)"};
+}
 
-document.getElementById("clearBtn").onclick = ()=>{
-  elText.value = "";
-  out.classList.add("hidden");
-  empty.classList.remove("hidden");
-};
+function buildQuiz(subject, showSuggested){
+  const isRU = (lang === "ru");
+  const base = isRU ? [
+    {q:"Объясни одним предложением, о чём текст.", a:"Пример: «Текст объясняет, от чего зависит скорость реакции и как её ускорить»."},
+    {q:"Назови 1 сложный термин и объясни его простыми словами.", a:"Пример: «Катализатор — это помощник, который ускоряет реакцию»."},
+    {q:"Приведи 1 пример из жизни.", a:"Пример: «Сахар быстрее растворяется в горячей воде»."},
+    {q:"Что было самым непонятным?", a:"Пример: «Энергия активации — что это и как её представить?»"},
+    {q:"Сделай короткий вывод (1 строка).", a:"Пример: «Больше температура/концентрация → быстрее реакция»."}
+  ] : [
+    {q:"Explain in one sentence what the text is about.", a:"Example: “It explains what affects reaction speed and how to speed it up.”"},
+    {q:"Pick one hard term and explain it simply.", a:"Example: “A catalyst is a helper that speeds up a reaction.”"},
+    {q:"Give one real-life example.", a:"Example: “Sugar dissolves faster in hot water.”"},
+    {q:"What was the most confusing part?", a:"Example: “Activation energy — how can I imagine it?”"},
+    {q:"Write a one-line takeaway.", a:"Example: “Higher temperature/concentration → faster reaction.”"}
+  ];
 
-document.getElementById("explainBtn").onclick = ()=>{
-  const res = analyze(elText.value || "");
-  if(!res){
-    alert("Paste some text first.");
+  // Small subject tweak
+  if(subject === "Physics" && isRU){
+    base[0].a = "Пример: «Текст объясняет, что такое давление и почему оно растёт при меньшей площади».";
+    base[2].a = "Пример: «Острый нож режет лучше из-за большего давления».";
+  }
+  if(subject === "Biology" && isRU){
+    base[0].a = "Пример: «Текст объясняет, как нейроны передают сигналы».";
+    base[2].a = "Пример: «Рефлекс — это быстрый ответ на раздражитель».";
+  }
+
+  return base.map((it, idx)=>`
+    <div class="q">
+      <div><b>Q${idx+1}:</b> ${it.q}</div>
+      ${showSuggested ? `<div class="hint2">${it.a}</div>` : ""}
+    </div>
+  `).join("");
+}
+
+function renderGlossary(items){
+  if(items.length === 0){
+    return `<span class="muted">${lang==="ru" ? "Сложные слова не найдены (или текст короткий)." : "No hard words detected (or text is short)."}</span>`;
+  }
+  return items.map(x=>`
+    <div class="kv">
+      <div><b>${x.w}</b></div>
+      <div>${x.d}</div>
+    </div>
+  `).join("");
+}
+
+function renderTerms(words){
+  if(words.length === 0){
+    return `<span class="muted">${lang==="ru" ? "Пока пусто" : "Nothing yet"}</span>`;
+  }
+  return words.map(w=>`<span class="chip">${w}</span>`).join("");
+}
+
+function renderExamples(examples){
+  return examples.map(e=>`<li>${e}</li>`).join("");
+}
+
+function buildCopyText(subject, explanationLines, terms, glossary, examples){
+  const isRU = (lang==="ru");
+  const head = isRU ? "ELI12 result" : "ELI12 result";
+  const exp = explanationLines.map(x=>`- ${x}`).join("\n");
+  const termLine = terms.length ? terms.join(", ") : (isRU ? "(нет)" : "(none)");
+  const gl = glossary.map(g=>`- ${g.w}: ${g.d}`).join("\n");
+  const ex = examples.map(e=>`- ${e}`).join("\n");
+  return `${head}\n\nSubject: ${subject}\n\nSimple explanation:\n${exp}\n\nKey terms:\n${termLine}\n\nGlossary:\n${gl}\n\nExamples:\n${ex}\n`;
+}
+
+function pushHistory(text){
+  const t = text.trim();
+  if(!t) return;
+  // avoid duplicates
+  if(history.length && history[0].t === t) return;
+  history.unshift({t, ts: Date.now()});
+  history = history.slice(0, 6);
+  renderHistory();
+}
+
+function renderHistory(){
+  if(history.length === 0){
+    elHistory.innerHTML = `<span class="muted">${lang==="ru" ? "Пока пусто" : "Empty"}</span>`;
+    return;
+  }
+  elHistory.innerHTML = history.map((h, i)=>{
+    const preview = h.t.replace(/\s+/g," ").slice(0, 34) + (h.t.length>34 ? "…" : "");
+    return `<button class="hist" data-i="${i}" title="${preview}">${preview}</button>`;
+  }).join("");
+  // attach
+  [...elHistory.querySelectorAll(".hist")].forEach(btn=>{
+    btn.onclick = ()=>{
+      const idx = Number(btn.getAttribute("data-i"));
+      elText.value = history[idx].t;
+      updateCount();
+    };
+  });
+}
+
+function updateCount(){
+  elCountBadge.textContent = wordCount(elText.value || "");
+}
+
+function collapseSetup(){
+  document.querySelectorAll("[data-collapse]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const id = btn.getAttribute("data-collapse");
+      const target = document.getElementById(id);
+      if(!target) return;
+      const hidden = target.classList.toggle("hidden");
+      btn.textContent = hidden ? "Show" : "Hide";
+    });
+  });
+}
+
+// --------- Main analyze/render ----------
+function run(){
+  const input = (elText.value || "").trim();
+  if(!input){
+    alert(lang==="ru" ? "Сначала вставь текст." : "Paste some text first.");
     return;
   }
 
-  // explanation
-  document.getElementById("explanation").innerHTML = res.explanationHTML;
+  const sentences = splitSentences(input);
+  const subj = detectSubject(input);
+  const lvl = Number(elLevel.value);
+  const maxWords = Number(elMaxWords.value);
 
-  // glossary
-  const g = document.getElementById("glossary");
-  if(res.glossary.length === 0){
-    g.innerHTML = "<span class='muted'>No hard words detected (or text is very short).</span>";
-  } else {
-    g.innerHTML = res.glossary.map(x=>`
-      <div class="kv">
-        <div><b>${x.w}</b></div>
-        <div>${x.d}</div>
-      </div>
-    `).join("");
-  }
+  const qScore = qualityScore(input);
+  const q = qualityLabel(qScore);
+
+  // pills
+  elSubjectPill.textContent = `${T[lang].subject}: ${subj}`;
+  elQualityPill.textContent = `${T[lang].quality}: ${q.t}`;
+  elQualityPill.style.borderColor = q.c;
+
+  // explain lines
+  const explainLines = simplifyText(sentences, lvl, maxWords);
+  elExplanation.innerHTML = `<ul class="list">${explainLines.map(x=>`<li>${x}</li>`).join("")}</ul>`;
+
+  // terms/glossary
+  const hardWords = pickHardWords(input, 10);
+  elTerms.innerHTML = renderTerms(hardWords.slice(0, 8));
+  const glossary = glossaryFor(hardWords.slice(0, 8));
+  elGlossary.innerHTML = renderGlossary(glossary);
 
   // examples
-  const ex = document.getElementById("examples");
-  ex.innerHTML = res.examples.map(e=>`<li>${e}</li>`).join("");
+  const examples = buildExamples(subj);
+  elExamples.innerHTML = renderExamples(examples);
 
   // quiz
-  const showHints = document.getElementById("showHints").checked;
-  const q = document.getElementById("quiz");
-  q.innerHTML = res.quiz.map((it, idx)=>`
-    <div class="q">
-      <div><b>Q${idx+1}:</b> ${it.q}</div>
-      ${showHints ? `<div class="hint">Hint: ${it.hint}</div>` : ""}
-    </div>
-  `).join("");
+  elQuiz.innerHTML = buildQuiz(subj, elShowSuggested.checked);
 
-  empty.classList.add("hidden");
-  out.classList.remove("hidden");
+  // show output
+  elEmpty.classList.add("hidden");
+  elOut.classList.remove("hidden");
+
+  // history
+  pushHistory(input);
+
+  // store for copy/download
+  const copyText = buildCopyText(subj, explainLines, hardWords.slice(0,8), glossary, examples);
+  elCopy.dataset.copy = copyText;
+  elDownload.dataset.copy = copyText;
+}
+
+// --------- Events ----------
+$("demoBio").onclick = ()=>{ elText.value = DEMO.bio; updateCount(); };
+$("demoChem").onclick = ()=>{ elText.value = DEMO.chem; updateCount(); };
+$("demoPhys").onclick = ()=>{ elText.value = DEMO.phys; updateCount(); };
+
+elExplain.onclick = run;
+
+elClear.onclick = ()=>{
+  elText.value = "";
+  updateCount();
+  elOut.classList.add("hidden");
+  elEmpty.classList.remove("hidden");
 };
 
-document.getElementById("showHints").onchange = ()=>{
-  // re-render quiz hints if output already visible
-  if(out.classList.contains("hidden")) return;
-  document.getElementById("explainBtn").click();
+elText.addEventListener("input", updateCount);
+
+elLevel.addEventListener("input", ()=>{
+  elLevelBadge.textContent = elLevel.value;
+});
+
+elMaxWords.addEventListener("change", ()=>{
+  // no-op, used in run
+});
+
+elShowSuggested.addEventListener("change", ()=>{
+  if(elOut.classList.contains("hidden")) return;
+  run(); // re-render quiz
+});
+
+elCopy.onclick = async ()=>{
+  const text = elCopy.dataset.copy || "";
+  if(!text) return;
+  try{
+    await navigator.clipboard.writeText(text);
+    toast(T[lang].copied);
+  } catch {
+    // fallback
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    toast(T[lang].copied);
+  }
 };
+
+elDownload.onclick = ()=>{
+  const text = elDownload.dataset.copy || "";
+  if(!text) return;
+  const blob = new Blob([text], {type:"text/plain;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "eli12_result.txt";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+elLangBtn.onclick = ()=>{
+  setLang(lang === "en" ? "ru" : "en");
+  renderHistory();
+  // if already rendered, rerun so text matches language
+  if(!elOut.classList.contains("hidden")){
+    run();
+  }
+};
+
+elThemeBtn.onclick = ()=>{
+  setTheme(!dark);
+};
+
+// --------- Init ----------
+setLang("en");
+setTheme(true);
+updateCount();
+elLevelBadge.textContent = elLevel.value;
+renderHistory();
+collapseSetup();
