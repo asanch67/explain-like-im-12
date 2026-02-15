@@ -1,3 +1,6 @@
+## Live demo
+https://asanch67.github.io/explain-like-im-12/
+
 # Explain Like I’m 12 (ELI12)
 
 Paste textbook text → get:
