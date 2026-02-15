@@ -515,7 +515,7 @@ function run(){
   const q = qualityLabel(qScore);
 
   // pills
-  elSubjectPill.textContent = `${T[lang].subject}: ${subj}`;
+  elSubjectPill.textContent = `${T[lang].subject}: ${subj} · L${lvl}`;
   elQualityPill.textContent = `${T[lang].quality}: ${q.t}`;
   elQualityPill.style.borderColor = q.c;
 
@@ -567,7 +567,13 @@ elText.addEventListener("input", updateCount);
 
 elLevel.addEventListener("input", ()=>{
   elLevelBadge.textContent = elLevel.value;
+
+  // ✅ auto re-run if output is visible
+  if(!elOut.classList.contains("hidden")){
+    run();
+  }
 });
+
 
 elMaxWords.addEventListener("change", ()=>{
   // no-op, used in run
