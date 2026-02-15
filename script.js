@@ -185,8 +185,11 @@ function setTheme(isDark){
 function splitSentences(text){
   const t = text.replace(/\s+/g," ").trim();
   if(!t) return [];
-  // simple sentence split
-  return t.split(/(?<=[.!?…])\s+/).map(s=>s.trim()).filter(Boolean);
+  // Safer split (no regex lookbehind)
+  return t
+    .split(/[.!?…]+\s+/)
+    .map(s => s.trim())
+    .filter(Boolean);
 }
 
 const SUBJECT_HINTS = {
