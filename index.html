@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Explain Like I'm 12 (ELI12)</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="container">
+    <h1>🧠 Explain Like I’m 12 <span class="muted">(ELI12)</span></h1>
+    <p class="subtitle">Paste textbook text → get simple explanation + examples + mini-quiz</p>
+  </header>
+
+  <main class="container grid">
+    <section class="card">
+      <h2>Input</h2>
+
+      <div class="row">
+        <button class="btn" id="demoBio">Demo: Biology</button>
+        <button class="btn" id="demoChem">Demo: Chemistry</button>
+        <button class="btn" id="demoPhys">Demo: Physics</button>
+      </div>
+
+      <label class="label" for="text">Paste your text:</label>
+      <textarea id="text" rows="9" placeholder="Paste a paragraph from a textbook..."></textarea>
+
+      <div class="row space">
+        <button class="btn primary" id="explainBtn">✨ Explain</button>
+        <button class="btn ghost" id="clearBtn">Clear</button>
+      </div>
+
+      <div class="note">
+        Works offline. No external APIs. Heuristic NLP MVP.
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Output</h2>
+
+      <div id="emptyState" class="empty">
+        Click a demo button or paste text, then press <b>Explain</b>.
+      </div>
+
+      <div id="output" class="hidden">
+        <div class="block">
+          <h3>1) Simple explanation</h3>
+          <div id="explanation" class="content"></div>
+        </div>
+
+        <div class="block">
+          <h3>2) Glossary (hard words → simple meaning)</h3>
+          <div id="glossary" class="content"></div>
+        </div>
+
+        <div class="block">
+          <h3>3) Examples</h3>
+          <ul id="examples" class="list"></ul>
+        </div>
+
+        <div class="block">
+          <div class="row between">
+            <h3>4) Mini-quiz (5 questions)</h3>
+            <label class="toggle">
+              <input type="checkbox" id="showHints" />
+              <span>Show hints</span>
+            </label>
+          </div>
+          <div id="quiz" class="content"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="container footer">
+    <span class="muted">ELI12 • Infomatrix-style MVP</span>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
