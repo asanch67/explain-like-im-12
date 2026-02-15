@@ -311,7 +311,6 @@ function buildExamples(subject){
 }
 
 function simplifyText(sentences, level, maxWords){
-  // Build a short explanation from first N sentences with replacements.
   const isRU = (lang === "ru");
 
   const replRU = [
@@ -330,15 +329,28 @@ function simplifyText(sentences, level, maxWords){
 
   const repl = isRU ? replRU : replEN;
 
-  let take = level === 1 ? 3 : (level === 2 ? 4 : 5);
+  // ✅ FIX: level 3 = simpler + shorter, level 1 = more detailed
+  let take = level === 1 ? 5 : (level === 2 ? 4 : 3);
+
   const picked = sentences.slice(0, take).map(s=>{
     let x = s;
+
     for(const [a,b] of repl) x = x.replace(a,b);
-    // extra simplification for level 3
+
     if(level === 3){
-      x = x.replace(/[,;:]\s*/g, ". ");
+      // aggressive simplification
       x = x.replace(/\((.*?)\)/g, "");
+      x = x.replace(/[,;:]\s*/g, ". ");
+      x = x.replace(/\s+/g, " ").trim();
+
+      // add simple starter for “kid-level”
+      if(isRU){
+        if(!/^(это|про|значит)/i.test(x)) x = "Это значит: " + x.toLowerCase();
+      } else {
+        if(!/^(this|it means|about)/i.test(x)) x = "It means: " + x[0].toLowerCase() + x.slice(1);
+      }
     }
+
     return x.trim();
   }).filter(Boolean);
 
@@ -353,6 +365,7 @@ function simplifyText(sentences, level, maxWords){
   }
   return out.length ? out : picked.slice(0,1);
 }
+
 
 function qualityScore(input){
   const wc = wordCount(input);
