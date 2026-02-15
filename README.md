@@ -16,3 +16,4 @@ We use simple NLP heuristics:
 
 ## Run locally
 Open `index.html` in your browser (double click).  
+Or use the live demo link above. 
