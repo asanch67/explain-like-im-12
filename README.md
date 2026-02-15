@@ -15,6 +15,4 @@ We use simple NLP heuristics:
 - building a small glossary + examples + quiz
 
 ## Run locally
-```bash
-pip install -r requirements.txt
-streamlit run app.py
+Open `index.html` in your browser (double click).  
