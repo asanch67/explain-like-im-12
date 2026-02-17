@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ELI12 — Solve</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">🧠</div>
+        <div>
+          <div class="title">ELI12 <span class="muted">• Solve mode</span></div>
+          <div class="subtitle">Write a problem → get step-by-step solution + hints + links</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a class="btn ghost" href="index.html">← Back</a>
+        <button class="btn ghost" id="langBtn">RU</button>
+        <button class="btn ghost" id="themeBtn">🌙</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container layout">
+    <!-- LEFT -->
+    <section class="card">
+      <div class="card__head">
+        <h2 id="uiSolveInput">Solve</h2>
+        <div class="pill">Offline</div>
+      </div>
+
+      <div class="row">
+        <button class="btn" id="demoTrig">Demo: Trig</button>
+        <button class="btn" id="demoPhys">Demo: Physics</button>
+        <button class="btn" id="demoChem">Demo: Chemistry</button>
+      </div>
+
+      <div class="spacer"></div>
+
+      <label class="label" for="problem" id="uiProblemLabel">Problem statement</label>
+      <textarea id="problem" rows="10" placeholder="e.g. Simplify: sin(a - 3π/2)"></textarea>
+
+      <div class="spacer"></div>
+
+      <div class="row between">
+        <div class="row">
+          <button class="btn primary" id="solveBtn">🧩 Solve step-by-step</button>
+          <button class="btn" id="clearBtn">Clear</button>
+        </div>
+        <div class="row">
+          <button class="btn ghost" id="copyBtn">Copy</button>
+          <button class="btn ghost" id="downloadBtn">Download</button>
+        </div>
+      </div>
+
+      <div class="spacer"></div>
+
+      <div class="mini">
+        <div class="mini__title">Knowledge Base (from main page)</div>
+        <div class="mini__body" style="display:flex;flex-direction:column;gap:8px">
+          <span class="muted" id="kbStatus">KB: 0 docs</span>
+          <div class="hint">
+            Books are stored in your browser. Upload them on the main page, then they appear here too.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT -->
+    <section class="card">
+      <div class="card__head">
+        <h2 id="uiSolveOutput">Solution</h2>
+        <div class="row tight">
+          <div class="pill" id="topicPill">Topic: —</div>
+          <div class="pill" id="confidencePill">Confidence: —</div>
+        </div>
+      </div>
+
+      <div id="emptyState" class="empty">
+        <div class="empty__title" id="uiEmptyTitle">No solution yet</div>
+        <div class="empty__text" id="uiEmptyText">Write a problem and press “Solve step-by-step”.</div>
+      </div>
+
+      <div id="output" class="hidden">
+        <div class="block">
+          <div class="block__head">
+            <h3 id="uiStepsTitle">1) Steps</h3>
+            <button class="btn small ghost" data-collapse="steps">Hide</button>
+          </div>
+          <div id="steps" class="content"></div>
+        </div>
+
+        <div class="block">
+          <div class="block__head">
+            <h3 id="uiHintsTitle">2) Hints</h3>
+            <button class="btn small ghost" data-collapse="hints">Hide</button>
+          </div>
+          <div id="hints" class="content"></div>
+        </div>
+
+        <div class="block">
+          <div class="block__head">
+            <h3 id="uiBookTitle">3) From your books (snippets)</h3>
+            <button class="btn small ghost" data-collapse="books">Hide</button>
+          </div>
+          <div id="books" class="content"></div>
+        </div>
+
+        <div class="block">
+          <div class="block__head">
+            <h3 id="uiLinksTitle">4) Links</h3>
+            <button class="btn small ghost" data-collapse="links">Hide</button>
+          </div>
+          <div id="links" class="content"></div>
+        </div>
+      </div>
+
+      <div class="toast" id="toast">Copied ✅</div>
+    </section>
+  </main>
+
+  <footer class="container footer">
+    <span class="muted">ELI12 • solve page</span>
+  </footer>
+
+  <script src="solve.js"></script>
+</body>
+</html>
