@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Explain Like I'm 12 (ELI12)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ELI12 — Explain Like I'm 12</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 
@@ -14,31 +14,37 @@
         <div class="logo" aria-hidden="true">🧠</div>
         <div>
           <div class="title">Explain Like I’m 12 <span class="muted">(ELI12)</span></div>
-          <div class="subtitle" id="uiSubtitle">Paste textbook text → get simple explanation + examples + quiz</div>
+          <div class="subtitle" id="uiSubtitle">Paste text or ask a question → get explanation + formulas + sources</div>
         </div>
       </div>
 
       <div class="actions">
         <button class="btn ghost" id="langBtn" title="Switch language">RU</button>
         <button class="btn ghost" id="themeBtn" title="Toggle theme">🌙</button>
+        <a class="btn ghost" href="solve.html">Solve</a>
         <a class="btn ghost" id="liveLink" target="_blank" rel="noreferrer">Live</a>
       </div>
     </div>
   </header>
 
   <main class="container layout">
-    <!-- LEFT: INPUT -->
+    <!-- LEFT -->
     <section class="card">
       <div class="card__head">
         <h2 id="uiInputTitle">Input</h2>
-        <div class="pill" id="uiOfflinePill">Offline MVP</div>
+        <div class="pill" id="uiOfflinePill">Offline</div>
       </div>
 
       <div class="row">
         <button class="btn" id="demoBio">Demo: Biology</button>
         <button class="btn" id="demoChem">Demo: Chemistry</button>
-        <button class="btn" id="demoPhys">Demo: Physics</button>
+        <button class="btn" id="demoMath">Demo: Math</button>
       </div>
+
+      <div class="spacer"></div>
+
+      <label class="label" for="question" id="uiQuestionLabel">Topic / question</label>
+      <input id="question" class="qinput" placeholder="e.g. sin(a-3π/2), what is a neuron? / Что такое нейрон?" />
 
       <div class="spacer"></div>
 
@@ -56,22 +62,19 @@
           <label class="label" for="maxWords" id="uiLenLabel">Output length</label>
           <div class="row tight">
             <select id="maxWords" class="select">
-              <option value="120">Short</option>
-              <option value="180" selected>Medium</option>
-              <option value="260">Long</option>
+              <option value="140">Short</option>
+              <option value="220" selected>Medium</option>
+              <option value="320">Long</option>
             </select>
             <div class="badge" id="countBadge">0</div>
           </div>
-          <div class="hint" id="uiLenHint">Word count of your input</div>
+          <div class="hint" id="uiLenHint">Word count of your text</div>
         </div>
       </div>
 
       <div class="spacer"></div>
 
-      <label class="label" for="text" id="uiPasteLabel">Paste your text</label>
-      <div class="hint">Topic / question (optional):</div>
-      <input id="question" class="q" placeholder="e.g. What is a neuron? / Что такое нейрон? / sin(a-3π/2)" />
-
+      <label class="label" for="text" id="uiPasteLabel">Paste your text (optional)</label>
       <textarea id="text" rows="10" placeholder="Paste a paragraph from a textbook..."></textarea>
 
       <div class="row space between">
@@ -85,25 +88,26 @@
           <button class="btn ghost" id="downloadBtn" title="Download .txt">Download</button>
         </div>
       </div>
+
       <div class="spacer"></div>
 
-<div class="mini">
-  <div class="mini__title">Knowledge Base (books)</div>
-  <div class="mini__body" style="display:flex;flex-direction:column;gap:10px">
-    <div class="row between">
-      <span class="muted" id="kbStatus">0 docs indexed</span>
-      <div class="row">
-        <input id="kbFiles" type="file" accept=".txt" multiple hidden />
-        <button class="btn ghost" id="kbUploadBtn">Upload .txt</button>
-        <button class="btn ghost" id="kbClearBtn">Clear KB</button>
+      <!-- Knowledge Base -->
+      <div class="mini">
+        <div class="mini__title" id="uiKbTitle">Knowledge Base (your books)</div>
+        <div class="mini__body" style="display:flex;flex-direction:column;gap:10px">
+          <div class="row between">
+            <span class="muted" id="kbStatus">0 docs indexed</span>
+            <div class="row">
+              <input id="kbFiles" type="file" accept=".txt" multiple hidden />
+              <button class="btn ghost" id="kbUploadBtn">Upload .txt</button>
+              <button class="btn ghost" id="kbClearBtn">Clear KB</button>
+            </div>
+          </div>
+          <div class="hint" id="uiKbHint">
+            Upload theory books as .txt. Everything stays in your browser (no server).
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="hint">Upload your theory books as .txt files. Everything stays in your browser.</div>
-  </div>
-</div>
-<div class="spacer"></div>
-
-
 
       <div class="mini">
         <div class="mini__title" id="uiHistoryTitle">History</div>
@@ -111,11 +115,11 @@
       </div>
 
       <div class="note" id="uiNote">
-        Works fully offline. No external APIs. Heuristic NLP + UX demo for hackathon.
+        Offline MVP. Uses simple heuristics + local search inside your uploaded books.
       </div>
     </section>
 
-    <!-- RIGHT: OUTPUT -->
+    <!-- RIGHT -->
     <section class="card">
       <div class="card__head">
         <h2 id="uiOutputTitle">Output</h2>
@@ -127,7 +131,7 @@
 
       <div id="emptyState" class="empty">
         <div class="empty__title" id="uiEmptyTitle">No output yet</div>
-        <div class="empty__text" id="uiEmptyText">Choose a demo or paste text, then press Explain.</div>
+        <div class="empty__text" id="uiEmptyText">Ask a question or paste text, then press Explain.</div>
       </div>
 
       <div id="output" class="hidden">
@@ -141,35 +145,26 @@
 
         <div class="block">
           <div class="block__head">
-            <h3 id="uiTermsTitle">2) Key terms</h3>
-            <button class="btn small ghost" data-collapse="terms">Hide</button>
+            <h3 id="uiFormulasTitle">2) Formulas / key facts</h3>
+            <button class="btn small ghost" data-collapse="formulas">Hide</button>
           </div>
-          <div id="terms" class="chips"></div>
-          <div class="spacer"></div>
-          <h4 class="h4" id="uiGlossTitle">Glossary</h4>
-          <div id="glossary" class="content"></div>
+          <div id="formulas" class="content"></div>
         </div>
 
         <div class="block">
           <div class="block__head">
-            <h3 id="uiExamplesTitle">3) Examples</h3>
-            <button class="btn small ghost" data-collapse="examples">Hide</button>
+            <h3 id="uiSourcesTitle">3) From your books (citations)</h3>
+            <button class="btn small ghost" data-collapse="sources">Hide</button>
           </div>
-          <ul id="examples" class="list"></ul>
+          <div id="sources" class="content"></div>
         </div>
 
         <div class="block">
-          <div class="block__head between">
-            <h3 id="uiQuizTitle">4) Mini-quiz</h3>
-            <div class="row tight">
-              <label class="toggle">
-                <input type="checkbox" id="showSuggested" />
-                <span id="uiShowSuggested">Show suggested answers</span>
-              </label>
-              <button class="btn small ghost" data-collapse="quiz">Hide</button>
-            </div>
+          <div class="block__head">
+            <h3 id="uiLinksTitle">4) Where to learn (links)</h3>
+            <button class="btn small ghost" data-collapse="links">Hide</button>
           </div>
-          <div id="quiz" class="content"></div>
+          <div id="links" class="content"></div>
         </div>
       </div>
 
@@ -178,10 +173,9 @@
   </main>
 
   <footer class="container footer">
-    <span class="muted">ELI12 • upgraded MVP (UI + history + export)</span>
+    <span class="muted">ELI12 • offline + local knowledge base</span>
   </footer>
 
   <script src="script.js"></script>
 </body>
 </html>
-
